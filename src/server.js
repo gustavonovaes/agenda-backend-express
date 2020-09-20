@@ -6,8 +6,9 @@ const schemas = require('./schemas');
 
 const server = express();
 server.disable('x-powered-by');
-server.use(cors());
 server.use(express.json());
+server.use(cors());
+server.use(helmet());
 
 server.use(mongoose(({
   uri: process.env.MONGO_URL,
