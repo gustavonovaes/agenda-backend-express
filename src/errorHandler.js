@@ -12,6 +12,13 @@ function parseValidationError(error) {
   };
 }
 
+function parseDuplicateKeyError(error) {
+  const keys = Object.keys(error.keyPattern).join(', ');
+  return {
+    message: `Já existe um registro com o mesmo valor para os campos: ${keys}`,
+  };
+}
+
 function errorHandler(error, req, res, next) {
   if (error instanceof ValidationError) {
     return res.status(400)
@@ -23,6 +30,15 @@ function errorHandler(error, req, res, next) {
       message: 'Dados não encontrados',
     });
   }
+
+  // Duplicate key error code 11000
+  if (error.code === 11000) {
+    return res.status(400).json(parseDuplicateKeyError(error));
+  }
+
+  res.status(500).json({
+    message: error.message,
+  });
 
   return next(error);
 }

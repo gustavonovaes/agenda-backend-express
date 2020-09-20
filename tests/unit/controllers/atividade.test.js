@@ -77,7 +77,7 @@ describe('Controller Atividade', () => {
 
     await atividadeController.delete(req, res);
 
-    expect(req.$models.Atividade.findByIdAndDelete).toHaveBeenCalledWith(req.params.id);
+    expect(req.$models.Atividade.findByIdAndDelete).toHaveBeenCalledTimes(1);
     expect(res.status).toHaveBeenCalledWith(204);
   });
 
