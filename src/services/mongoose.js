@@ -32,6 +32,7 @@ const mongooseServiceFactory = ({ uri, timeout, schemas }) => (req, _, next) => 
       }
 
       const conn = mongoose.createConnection(uri, {
+        useCreateIndex: true,
         useNewUrlParser: true,
         useUnifiedTopology: true,
         connectTimeoutMS: timeout,
