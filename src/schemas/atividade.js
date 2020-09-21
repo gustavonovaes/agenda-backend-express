@@ -3,8 +3,8 @@ const { Schema } = require('mongoose');
 const atividadeSchema = new Schema({
   titulo: {
     type: String,
-    required: [true, 'Título é obrigatório!'],
     trim: true,
+    required: [true, 'Título é obrigatório!'],
     minlength: [3, 'Título muito curto!'],
     maxlength: [255, 'Título muito longo!'],
   },
@@ -21,8 +21,7 @@ const atividadeSchema = new Schema({
   dataPrazo: {
     type: Date,
     default: '',
-    validate:
-    {
+    validate: {
       validator(value) {
         if (!value) {
           return true;

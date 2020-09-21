@@ -1,28 +1,28 @@
 const { Schema } = require('mongoose');
 const isEmail = require('validator/lib/isEmail');
 
-const usuarioSchema = new Schema({
-  nome: {
+const userSchema = new Schema({
+  name: {
     type: String,
-    required: [true, 'Nome é obrigatório!'],
     trim: true,
+    required: [true, 'Nome é obrigatório!'],
     minlength: [3, 'Nome muito curto!'],
     maxlength: [255, 'Nome muito longo!'],
   },
   email: {
     type: String,
-    required: [true, 'Email é obrigatório!'],
+    unique: true,
     trim: true,
     lowercase: true,
-    unique: true,
+    required: [true, 'Email é obrigatório!'],
     minlength: [3, 'Email muito curto!'],
     maxlength: [255, 'Email muito longo!'],
     validate: [isEmail, 'Email inválido!'],
   },
-  senha: {
+  password: {
     type: String,
-    required: [true, 'Senha é obrigatória!'],
     trim: true,
+    required: [true, 'Senha é obrigatória!'],
     minlength: [6, 'Senha muito curta!'],
     maxlength: [255, 'Senha muito longa!'],
   },
@@ -30,4 +30,4 @@ const usuarioSchema = new Schema({
   createdAt: { type: Date, default: Date.now },
 });
 
-module.exports = usuarioSchema;
+module.exports = userSchema;

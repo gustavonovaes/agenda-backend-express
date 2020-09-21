@@ -1,10 +1,10 @@
 const mongoose = require('mongoose');
 const mockdate = require('mockdate');
 const { format, addDays } = require('date-fns');
+
 const Schemas = require('../../../src/schemas');
 
 const MOCKED_DATE = '2020-09-13';
-
 describe('Schema Atividade', () => {
   let Atividade;
 

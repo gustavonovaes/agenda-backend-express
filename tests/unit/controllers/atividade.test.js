@@ -1,4 +1,5 @@
-const { mockRequest, mockResponse } = require('../../util/interceptor');
+const { mockRequest, mockResponse } = require('../../util/express');
+
 const mockAtividades = require('../../util/mocks/atividades');
 
 const atividadeController = require('../../../src/controllers/atividade');
@@ -92,7 +93,7 @@ describe('Controller Atividade', () => {
 
     const res = mockResponse();
 
-    await atividadeController.concluir(req, res);
+    await atividadeController.done(req, res);
 
     expect(res.status).toHaveBeenCalledWith(200);
     expect(req.$models.Atividade.findByIdAndUpdate).toHaveBeenCalledTimes(1);

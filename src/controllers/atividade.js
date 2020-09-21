@@ -1,3 +1,5 @@
+const filterByKeys = require('../utils/filterByKeys');
+
 const atividadeController = {
   async index(req, res) {
     const atividades = await req.$models.Atividade.find();
@@ -5,7 +7,7 @@ const atividadeController = {
   },
 
   async store(req, res) {
-    const atividadeData = {
+    const createData = {
       titulo: req.body.titulo,
       descricao: req.body.descricao,
       dataInicio: req.body.dataInicio,
@@ -13,27 +15,20 @@ const atividadeController = {
       status: req.body.status,
     };
 
-    const atividade = await req.$models.Atividade.create(atividadeData);
+    const atividade = await req.$models.Atividade.create(createData);
 
     res.status(201).json(atividade);
   },
 
   async update(req, res) {
-    const campos = ['titulo', 'descricao', 'dataInicio', 'dataPrazo', 'status'];
-
-    const atividadeData = Object.keys(req.body).reduce((acc, key) => {
-      if (campos.includes(key)) {
-        acc[key] = req.body[key];
-      }
-
-      return acc;
-    }, {});
-
     const { id } = req.params;
+
+    const keys = ['titulo', 'descricao', 'dataInicio', 'dataPrazo', 'status'];
+    const updateData = filterByKeys(req.body, keys);
 
     const atividade = await req.$models.Atividade.findByIdAndUpdate(
       id,
-      atividadeData,
+      updateData,
       { new: true, useFindAndModify: false },
     );
 
@@ -56,17 +51,17 @@ const atividadeController = {
     res.status(204).send();
   },
 
-  async concluir(req, res) {
+  async done(req, res) {
     const { id } = req.params;
 
-    const update = {
+    const updateData = {
       status: 'concluída',
       dataConclusao: new Date(),
     };
 
     const atividade = await req.$models.Atividade.findByIdAndUpdate(
       id,
-      update,
+      updateData,
       { new: true, useFindAndModify: false },
     );
 

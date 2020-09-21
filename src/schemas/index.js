@@ -1,7 +1,7 @@
+const User = require('./user');
 const Atividade = require('./atividade');
-const Usuario = require('./usuario');
 
 module.exports = {
+  User,
   Atividade,
-  Usuario,
 };

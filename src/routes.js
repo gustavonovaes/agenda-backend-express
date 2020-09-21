@@ -3,7 +3,8 @@ const router = require('express').Router();
 const { jwtMiddleware } = require('./services/jwt');
 
 const atividadeController = require('./controllers/atividade');
-const autenticacaoController = require('./controllers/autenticacao');
+const sessionController = require('./controllers/session');
+const userController = require('./controllers/user');
 
 // Wrap error handler
 const wrap = (fn) => (req, res, next) => fn(req, res).catch(next);
@@ -15,12 +16,13 @@ router.put('/api/atividades/:id', wrap(atividadeController.update));
 router.delete('/api/atividades/:id', wrap(atividadeController.delete));
 router.patch(
   '/api/atividades/:id/concluir',
-  wrap(atividadeController.concluir),
+  wrap(atividadeController.done),
 );
 
-router.post('/api/autenticacao/registrar', wrap(autenticacaoController.registrar));
-router.post('/api/autenticacao/login', wrap(autenticacaoController.login));
-router.post('/api/autenticacao/refresh', jwtMiddleware, wrap(autenticacaoController.refresh));
+router.post('/api/users', wrap(userController.store));
+
+router.post('/api/session', wrap(sessionController.store));
+router.post('/api/session/refresh', jwtMiddleware, wrap(sessionController.refresh));
 
 router.use((_, res) => {
   res.status(404).json({

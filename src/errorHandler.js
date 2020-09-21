@@ -21,7 +21,7 @@ function parseDuplicateKeyError(error) {
 
 function errorHandler(error, req, res, next) {
   if (error instanceof ValidationError) {
-    return res.status(400)
+    return res.status(422)
       .json(parseValidationError(error));
   }
 
@@ -33,7 +33,7 @@ function errorHandler(error, req, res, next) {
 
   // Duplicate key error code 11000
   if (error.code === 11000) {
-    return res.status(400).json(parseDuplicateKeyError(error));
+    return res.status(409).json(parseDuplicateKeyError(error));
   }
 
   res.status(500).json({

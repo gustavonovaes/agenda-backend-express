@@ -1,22 +1,15 @@
 const request = require('supertest');
-const mongoose = require('mongoose');
 const { format, parseISO } = require('date-fns');
 
 const server = require('../../src/server');
+
 const mockAtividades = require('../util/mocks/atividades');
-const mockUsuario = require('../util/mocks/usuario');
+const mockUser = require('../util/mocks/user');
+const { connect, disconnect, cleanCollection } = require('../util/mongoose');
 
 const MOCK_DATE = '2020-09-13';
 
-async function cleanAllCollections() {
-  mongoose.connections.forEach((connection) => {
-    Object.keys(connection.collections).forEach(async (collectionName) => {
-      await connection.collections[collectionName].deleteMany(() => {});
-    });
-  });
-}
-
-async function criaAtividade(props = {}, token = null) {
+async function createAtividade(props = {}, token = null) {
   const atividade = {
     titulo: 'Test apenas com titulo e dataInicio',
     dataInicio: MOCK_DATE,
@@ -31,37 +24,33 @@ async function criaAtividade(props = {}, token = null) {
   return response.body;
 }
 
-async function criaUsuario() {
-  const response = await request(server)
-    .post('/api/autenticacao/registrar')
-    .send(mockUsuario);
-
+async function createUser() {
+  const response = await request(server).post('/api/users').send(mockUser);
   return response.body;
 }
 
 describe('/api/atividades', () => {
+  let conn;
   let token;
 
   beforeAll(async () => {
-    await mongoose.connect(process.env.MONGO_URL, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-      connectTimeoutMS: 1000,
-      socketTimeoutMS: 1000,
-    });
+    conn = await connect();
 
-    await cleanAllCollections();
+    await cleanCollection('users');
+    await cleanCollection('atividades');
 
-    const res = await criaUsuario();
+    const res = await createUser();
     token = res.token;
   });
 
   afterEach(async () => {
-    await cleanAllCollections();
+    await cleanCollection('atividades');
   });
 
   afterAll(async () => {
-    await mongoose.disconnect();
+    await cleanCollection('users');
+    await cleanCollection('atividades');
+    await disconnect();
   });
 
   it('Não lista nenhuma atividade', async () => {
@@ -74,10 +63,7 @@ describe('/api/atividades', () => {
   });
 
   it('Lista atividades cadastradas', async () => {
-    await mongoose.connection
-      .collection('atividades')
-      .insertMany(mockAtividades);
-
+    await conn.db.collection('atividades').insertMany(mockAtividades);
     const response = await request(server)
       .get('/api/atividades')
       .set('x-access-token', token);
@@ -87,10 +73,7 @@ describe('/api/atividades', () => {
   });
 
   it('Lista atividades na ordem correta', async () => {
-    await mongoose.connection
-      .collection('atividades')
-      .insertMany(mockAtividades);
-
+    await conn.collection('atividades').insertMany(mockAtividades);
     const response = await request(server)
       .get('/api/atividades')
       .set('x-access-token', token);
@@ -111,9 +94,7 @@ describe('/api/atividades', () => {
   });
 
   it('Lista atividades com os campos esperados', async () => {
-    await mongoose.connection
-      .collection('atividades')
-      .insertMany(mockAtividades);
+    await conn.collection('atividades').insertMany(mockAtividades);
 
     const response = await request(server)
       .get('/api/atividades')
@@ -139,7 +120,7 @@ describe('/api/atividades', () => {
       .set('x-access-token', token)
       .send({});
 
-    expect(response.statusCode).toBe(400);
+    expect(response.statusCode).toBe(422);
 
     expect(response.body).toHaveProperty('message', 'Erros de validação!');
     expect(response.body).toHaveProperty(
@@ -178,7 +159,7 @@ describe('/api/atividades', () => {
   });
 
   it('Atualiza atividade', async () => {
-    const atividade = await criaAtividade({}, token);
+    const atividade = await createAtividade({}, token);
     const id = atividade._id;
 
     const novaDescricao = 'Nova descrição';
@@ -200,13 +181,11 @@ describe('/api/atividades', () => {
       .send({});
 
     expect(response.statusCode).toBe(404);
-    expect(response.body.message).toEqual(
-      'Dados não encontrados',
-    );
+    expect(response.body.message).toEqual('Dados não encontrados');
   });
 
   it('Marca atividade como concluída', async () => {
-    const atividade = await criaAtividade({ status: 'aberta' }, token);
+    const atividade = await createAtividade({ status: 'aberta' }, token);
     const id = atividade._id;
 
     const response = await request(server)
@@ -217,7 +196,10 @@ describe('/api/atividades', () => {
     expect(response.body).toHaveProperty('status', 'concluída');
 
     const today = format(new Date(), 'yyyy-MM-dd');
-    const dataConclusao = format(parseISO(response.body.dataConclusao), 'yyyy-MM-dd');
+    const dataConclusao = format(
+      parseISO(response.body.dataConclusao),
+      'yyyy-MM-dd',
+    );
     expect(dataConclusao).toBe(today);
   });
 
@@ -228,8 +210,6 @@ describe('/api/atividades', () => {
       .set('x-access-token', token);
 
     expect(response.statusCode).toBe(404);
-    expect(response.body.message).toEqual(
-      'Dados não encontrados',
-    );
+    expect(response.body.message).toEqual('Dados não encontrados');
   });
 });

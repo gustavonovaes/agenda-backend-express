@@ -21,7 +21,10 @@ server.use(
   }),
 );
 
-server.use(jwtServiceFactory());
+server.use(jwtServiceFactory({
+  secret: process.env.JWT_SECRET,
+  expiresTime: process.env.JWT_EXPIRES_TIME,
+}));
 
 server.use(require('./routes'));
 server.use(require('./errorHandler'));
